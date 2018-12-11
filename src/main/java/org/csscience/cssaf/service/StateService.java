@@ -21,5 +21,7 @@ public interface StateService {
     public State findByShortName(String shortName);
     
     public void addState(State state);
+    
+    public String combinedName(String shortName);
 
 }

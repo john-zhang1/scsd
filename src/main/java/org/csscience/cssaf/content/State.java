@@ -56,8 +56,4 @@ public class State implements Serializable {
     public void setStateId(Integer stateId) {
         this.stateId = stateId;
     }
-    
-    public String combinedName(){
-        return longName + " - " + shortName;
-    }
 }

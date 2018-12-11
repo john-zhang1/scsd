@@ -6,6 +6,7 @@
 package org.csscience.cssaf.service.impl;
 
 import java.util.List;
+import org.apache.log4j.Logger;
 import org.csscience.cssaf.content.Zip;
 import org.csscience.cssaf.dao.ZipDao;
 import org.csscience.cssaf.service.ZipService;
@@ -21,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ZipServiceImpl implements ZipService {
 
+    private static Logger log = Logger.getLogger(ZipServiceImpl.class);
+
     @Autowired
     private ZipDao zipDao;
     
@@ -30,8 +33,8 @@ public class ZipServiceImpl implements ZipService {
     }
 
     @Override
-    public Zip findByZip(String zip) {
-        return zipDao.findByZip(zip);
+    public Zip findByZip(String zipcode) {
+        return zipDao.findByZip(zipcode);
     }
 
     @Override
@@ -42,5 +45,12 @@ public class ZipServiceImpl implements ZipService {
     @Override
     public void update(Zip zip) {
         zipDao.update(zip);
+    }
+
+    @Override
+    public String getLatLon(String zipcode) {
+        Zip zip = findByZip(zipcode);
+        String latLon = zip.getLatitude() + "," + zip.getLongitude();
+        return latLon;
     }
 }

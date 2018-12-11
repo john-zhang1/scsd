@@ -12,6 +12,7 @@ import org.csscience.cssaf.service.StateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -20,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class StateServiceImpl implements StateService {
+
+    /** log4j logger */
+    private static Logger log = Logger.getLogger(StateServiceImpl.class);
 
     @Autowired
     private StateDao stateDao;
@@ -42,5 +46,12 @@ public class StateServiceImpl implements StateService {
     @Override
     public void addState(State state) {
         stateDao.addState(state);
+    }
+
+    @Override
+    public String combinedName(String shortName) {
+        State state = findByShortName(shortName);
+        String combinedState = state.getLongName() + " - " + state.getShortName();
+        return combinedState;
     }
 }

@@ -5,7 +5,6 @@
  */
 package org.csscience.cssaf.dao;
 
-import java.math.BigDecimal;
 import java.util.List;
 import org.csscience.cssaf.content.Zip;
 

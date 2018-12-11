@@ -16,10 +16,12 @@ public interface ZipService {
 
     public List<Zip> findAll();
     
-    public Zip findByZip(String zip);
+    public Zip findByZip(String zipcode);
     
     public void addZip(Zip zip);
     
     public void update(Zip zip);
     
+    public String getLatLon(String zipcode);
+
 }
