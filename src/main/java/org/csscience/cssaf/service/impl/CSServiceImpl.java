@@ -18,6 +18,7 @@ import org.csscience.cssaf.csv.CSVLine;
 import org.csscience.cssaf.service.CSService;
 import org.csscience.cssaf.service.StateService;
 import org.csscience.cssaf.service.ZipService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
@@ -28,11 +29,16 @@ import org.springframework.context.support.AbstractApplicationContext;
 public class CSServiceImpl implements CSService {
     
     private AbstractApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
-    private StateService stateService = (StateService) context.getBean(StateService.class);
-    private ZipService zipService = null;
+
+    @Autowired
+    private StateService stateService;
+
+    @Autowired
+    private ZipService zipService;
+
     private Properties prop = context.getBean(LocalConfiguration.class).localProperties();    
     private static CSService cSService = null;
-    
+
     @Override
     public List<CSVLine> getCollectionData() {
         String collectionFile  = getPath("data.collection");
@@ -120,6 +126,35 @@ public class CSServiceImpl implements CSService {
             path = cssafHome + dir + dateDir;
         }
         return path;
+    }
+
+
+    @Override
+    public List<CSVLine> getCollectionTaxonomyData() {
+        String collectionFile  = getPath("data.taxonomis");
+        List<CSVLine> collectionData = null;
+        File f = new File(collectionFile);
+        try {
+            CSV csv = new CSV(f);
+            collectionData = csv.lines;
+        } catch (Exception ex) {
+            Logger.getLogger(CSService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return collectionData;        
+    }
+
+    @Override
+    public List<CSVLine> getLinksData() {
+        String csdFile  = getPath("data.links");
+        List<CSVLine> csdData = null;
+        File f = new File(csdFile);
+        try {
+            CSV csv = new CSV(f);
+            csdData = csv.lines;
+        } catch (Exception ex) {
+            Logger.getLogger(CSService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return csdData;        
     }
 
     public static CSService getInstance(){

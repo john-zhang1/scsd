@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 public class StateServiceImpl implements StateService {
 
     /** log4j logger */
-    private static Logger log = Logger.getLogger(StateServiceImpl.class);
+    private static final Logger log = Logger.getLogger(StateServiceImpl.class);
 
     @Autowired
     private StateDao stateDao;

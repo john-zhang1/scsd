@@ -164,6 +164,12 @@ public class PointJson {
         }
 
         public void setUri(String uri) {
+            if(uri != null || uri.equals("")){
+                if(uri.contains("http:")){
+                    String replace = uri.replace("http:", "https:");
+                    uri = replace;
+                }
+            }
             this.uri = uri;
         }
 

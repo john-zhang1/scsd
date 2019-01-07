@@ -50,7 +50,13 @@ public class ZipServiceImpl implements ZipService {
     @Override
     public String getLatLon(String zipcode) {
         Zip zip = findByZip(zipcode);
-        String latLon = zip.getLatitude() + "," + zip.getLongitude();
+        String latLon = null;
+        try{
+            latLon = zip.getLatitude() + "," + zip.getLongitude();
+        }catch(Exception e){
+            System.out.println(e);
+        }
+        
         return latLon;
     }
 }

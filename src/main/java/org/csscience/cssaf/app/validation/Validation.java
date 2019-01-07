@@ -19,6 +19,7 @@ import org.csscience.cssaf.content.Album;
 import org.csscience.cssaf.csv.CSV;
 import org.csscience.cssaf.csv.CSVLine;
 import org.csscience.cssaf.service.CSService;
+import org.csscience.cssaf.service.ZipService;
 import org.csscience.cssaf.service.impl.CSServiceImpl;
 
 /**
@@ -162,5 +163,34 @@ public class Validation {
         }
 
         return foundIssue;
-    }    
+    }
+    
+    public void validateZipcode(){
+
+        List<String> invalidZipcodes = new ArrayList<>();
+        List<CSVLine> csdData = servicesFactory.getCSDData();
+        ZipService zipService = servicesFactory.getZipService();
+        
+        for(CSVLine csv : csdData)
+        {
+            String zipcode = null;
+            try{
+                zipcode = (String) csv.get("dwc.npdg.homezip").get(0);
+            }catch(Exception e){
+                System.err.println("No zipcode is provided." + e);
+                System.out.println(csv.getId() + " does not have zipcode.");
+            }
+            
+            String latLon = zipService.getLatLon(zipcode);
+            if(latLon == null || latLon.equals("")){
+                invalidZipcodes.add(zipcode);
+            }
+        }
+        
+        if(invalidZipcodes.size() > 0){
+            System.err.println("Invalid zipcodes: ");
+            System.out.println(invalidZipcodes.toString());
+            System.exit(1);            
+        }
+    }
 }

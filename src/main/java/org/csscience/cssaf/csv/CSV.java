@@ -127,7 +127,7 @@ public class CSV {
 
            String keyColumn = null;
            String fileName = f.getName();
-           if(fileName.equals("collection.csv")){
+           if(fileName.equals("collection.csv") || fileName.equals("collection_taxonomies.csv")){
                keyColumn = "dwc.npdg.sampleid";
            }else if(fileName.equals("csd.csv")){
                keyColumn = "dwc.npdg.sampleid";
@@ -135,6 +135,8 @@ public class CSV {
                keyColumn = "short";
            }else if(fileName.equals("zipcode.csv")){
                keyColumn = "zip";
+           }else if(fileName.equals("links.csv")){
+               keyColumn = "Internal ID";
            }
 
            int i = 0;
@@ -150,7 +152,7 @@ public class CSV {
                 // Store the heading
                 headings.add(element);
 
-                if(fileName.equals("csd.csv"))
+                if(fileName.equals("csd.csv") || fileName.equals("links.csv"))
                     element = convertMetadata(element);
                 if(element.contains(keyColumn)){
                     keyPos = i;
@@ -373,7 +375,12 @@ public class CSV {
                 if (headings.size() < i) {
                     throw new Exception("error with out of range");
                 }
-                csvLine.add(headings.get(i), null);
+                try{
+                    csvLine.add(headings.get(i), null);
+                }catch(Exception e){
+                    System.out.println(e);
+                }
+                
                 String[] elements = part.split(escapedValueSeparator);
                 for (String element : elements)
                 {

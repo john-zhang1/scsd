@@ -17,7 +17,11 @@ public interface CSService {
 
     public List<CSVLine> getCollectionData();
 
+    public List<CSVLine> getCollectionTaxonomyData();
+
     public List<CSVLine> getCSDData();
+
+    public List<CSVLine> getLinksData();
 
     public ZipService getZipService();
 
