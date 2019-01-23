@@ -14,14 +14,24 @@ import org.csscience.cssaf.content.State;
  */
 public interface StateService {
 
+    public State findById(int id);
+
     public List<State> findAll();
     
     public State findByLongName(String longName);
     
     public State findByShortName(String shortName);
     
-    public void addState(State state);
+    public void saveState(State state);
+
+    public void updateState(State state);
+
+    public void deleteStateByShortName(String shortName);
     
     public String combinedName(String shortName);
+    
+    public boolean isShortNameUnique(String shortName);
+
+    public boolean isLongNameUnique(String longName);
 
 }

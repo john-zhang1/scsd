@@ -11,6 +11,7 @@ import org.csscience.cssaf.dao.AbstractDao;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.csscience.cssaf.dao.ZipDao;
+import org.hibernate.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -35,7 +36,7 @@ public class ZipDaoImpl extends AbstractDao implements ZipDao{
     }
 
     @Override
-    public void addZip(Zip zip) {
+    public void saveZip(Zip zip) {
         persist(zip);
     }
 
@@ -43,5 +44,12 @@ public class ZipDaoImpl extends AbstractDao implements ZipDao{
     public void update(Zip zip) {
         getSession().update(zip);
     }
-    
+
+    @Override
+    public void deleteZipByZipcode(String zip) {
+        Query query = getSession().createSQLQuery("delete from zipcode where zip = :zip");
+        query.setString("zip", zip);
+        query.executeUpdate();
+    }
+
 }

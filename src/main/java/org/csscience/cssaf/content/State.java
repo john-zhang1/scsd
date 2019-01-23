@@ -9,6 +9,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "states", uniqueConstraints = {
@@ -27,9 +28,11 @@ public class State implements Serializable {
     @Column(name = "ID", unique = true, nullable = false)
     private Integer stateId;
 
+    @NotNull
     @Column(name = "shortname", unique = true, nullable = false, length = 2)
     private String shortName;
     
+    @NotNull
     @Column(name = "longname", unique = true, nullable = false, length = 25)
     private String longName;
 

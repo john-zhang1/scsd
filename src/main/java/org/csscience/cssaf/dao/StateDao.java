@@ -14,12 +14,16 @@ import org.csscience.cssaf.content.State;
  */
 public interface StateDao {
 
+    public State findById(int id);
+
     public List<State> findAll();
-    
+
     public State findByLongName(String longName);
-    
+
     public State findByShortName(String shortName);
-    
-    public void addState(State state);
-    
+
+    public void saveState(State state);
+
+    void deleteStateByShortName(String shortName);
+
 }

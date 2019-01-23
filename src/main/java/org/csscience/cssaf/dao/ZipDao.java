@@ -18,8 +18,10 @@ public interface ZipDao {
     
     public Zip findByZip(String zip);
     
-    public void addZip(Zip zip);
+    public void saveZip(Zip zip);
     
     public void update(Zip zip);
+
+    void deleteZipByZipcode(String zip);
 
 }

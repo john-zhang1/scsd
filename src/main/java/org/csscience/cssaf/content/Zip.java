@@ -14,6 +14,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
 /**
  *
@@ -35,18 +36,23 @@ public class Zip implements Serializable {
     @Column(name = "ID", unique = true, nullable = false)
     private Integer id;
     
+    @NotNull
     @Column(name = "ZIP", unique = true, nullable = false)
     private String zip;
     
+    @NotNull
     @Column(name = "CITY", nullable = false)
     private String city;
     
+    @NotNull
     @Column(name = "SHORTSTATE", nullable = false)
     private String shortState;
     
+    @NotNull
     @Column(name = "LATITUDE")
     private BigDecimal latitude;
     
+    @NotNull
     @Column(name = "LONGITUDE")
     private BigDecimal longitude;
 

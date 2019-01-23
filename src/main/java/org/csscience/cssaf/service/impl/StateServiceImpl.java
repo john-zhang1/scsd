@@ -27,7 +27,12 @@ public class StateServiceImpl implements StateService {
 
     @Autowired
     private StateDao stateDao;
-    
+
+    @Override
+    public State findById(int id) {
+        return stateDao.findById(id);
+    }
+
     @Override
     public List<State> findAll() {
         return stateDao.findAll();
@@ -44,8 +49,34 @@ public class StateServiceImpl implements StateService {
     }
 
     @Override
-    public void addState(State state) {
-        stateDao.addState(state);
+    public void saveState(State state) {
+        stateDao.saveState(state);
+    }
+
+    @Override
+    public void updateState(State state) {
+        if(state!=null){
+            State st  = stateDao.findById(state.getStateId());
+            st.setShortName(state.getShortName());
+            st.setLongName(state.getLongName());
+        }
+    }
+
+    @Override
+    public void deleteStateByShortName(String shortName) {
+        stateDao.deleteStateByShortName(shortName);
+    }
+
+    @Override
+    public boolean isShortNameUnique(String shortName) {
+        State state = findByShortName(shortName);
+        return (state == null);
+    }
+
+    @Override
+    public boolean isLongNameUnique(String longName) {
+        State state = findByLongName(longName);
+        return (state == null);
     }
 
     @Override

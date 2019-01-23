@@ -18,10 +18,14 @@ public interface ZipService {
     
     public Zip findByZip(String zipcode);
     
-    public void addZip(Zip zip);
+    public void saveZip(Zip zip);
     
-    public void update(Zip zip);
+    public void updateZip(Zip zip);
     
     public String getLatLon(String zipcode);
+
+    public void deleteZipByZipcode(String shortName);
+
+    public boolean isZipcodeUnique(String zipcode);
 
 }

@@ -38,13 +38,24 @@ public class ZipServiceImpl implements ZipService {
     }
 
     @Override
-    public void addZip(Zip zip) {
-        zipDao.addZip(zip);
+    public void saveZip(Zip zip) {
+        zipDao.saveZip(zip);
     }
 
     @Override
-    public void update(Zip zip) {
+    public void updateZip(Zip zip) {
         zipDao.update(zip);
+    }
+
+    @Override
+    public void deleteZipByZipcode(String zipcode) {
+        zipDao.deleteZipByZipcode(zipcode);
+    }
+
+    @Override
+    public boolean isZipcodeUnique(String zipcode) {
+        Zip zip = findByZip(zipcode);
+        return (zip == null);
     }
 
     @Override
