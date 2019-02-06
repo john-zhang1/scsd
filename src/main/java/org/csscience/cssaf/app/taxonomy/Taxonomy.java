@@ -42,7 +42,6 @@ public class Taxonomy {
         int i = 1;
         for(CSVLine link : LinksData)
         {
-            Map<String, ArrayList> items = link.getItems();
             String subDir = directory + Integer.toString(i) + "/";
             String internalCode = null;
             if(link.getItems() != null){

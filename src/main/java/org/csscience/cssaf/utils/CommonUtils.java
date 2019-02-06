@@ -208,4 +208,40 @@ public class CommonUtils {
         }
         return handle;
     }
+
+
+    protected final String convertCsMetadata(String head){
+        String metadataString = null;
+        head = head.trim();
+        if((head != null) && !"".equals(head))
+        {
+            if(org.apache.commons.lang.StringUtils.contains(head, "Internal ID"))
+                metadataString = "dwc.npdg.internalcode";
+            else if(org.apache.commons.lang.StringUtils.contains(head, "Sample ID"))
+                metadataString = "dwc.npdg.sampleid";
+            else if(org.apache.commons.lang.StringUtils.contains(head, "Date Collected"))
+                metadataString = "dwc.npdg.datecollected";
+            else if(org.apache.commons.lang.StringUtils.contains(head, "City"))
+                metadataString = "dwc.npdg.homecity";
+            else if(org.apache.commons.lang.StringUtils.contains(head, "State"))
+                metadataString = "dwc.npdg.homestate";
+            else if(org.apache.commons.lang.StringUtils.contains(head, "Zip"))
+                metadataString = "dwc.npdg.homezip";
+            else if(org.apache.commons.lang.StringUtils.contains(head, "Screen Status"))
+                metadataString = "screenstatus";
+            else if(org.apache.commons.lang.StringUtils.contains(head, "# of isolates from RBM"))
+                metadataString = "dwc.npdg.isolatesRBM";
+            else if(org.apache.commons.lang.StringUtils.contains(head, "# of isolates from TV8"))
+                metadataString = "dwc.npdg.isolatesTV8";
+            else if(org.apache.commons.lang.StringUtils.contains(head, "Collection Detail"))
+                metadataString = "dwc.npdg.detail";
+            else if(org.apache.commons.lang.StringUtils.contains(head, "LIB"))
+                metadataString = "lib";
+            else if(org.apache.commons.lang.StringUtils.contains(head, "Photo"))
+                metadataString = "dwc.npdg.imagestatus";
+            else
+                metadataString = head;
+        }
+        return metadataString;
+    }
 }

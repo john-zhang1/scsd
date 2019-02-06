@@ -36,8 +36,8 @@ nb-configuration.xml
 /*.properties
 !/build.properties
 
-# Ignore a local.cfg file in root folder, if it exists
-/local.properties
+# Ignore resource csv files
+*.csv
 
 ##Mac noise
 .DS_Store

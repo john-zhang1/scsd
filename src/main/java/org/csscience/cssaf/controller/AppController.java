@@ -11,7 +11,6 @@ import javax.validation.Valid;
 import org.csscience.cssaf.content.State;
 import org.csscience.cssaf.content.Zip;
 import org.csscience.cssaf.service.StateService;
-import org.csscience.cssaf.service.ZipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.ComponentScan;
@@ -19,9 +18,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.csscience.cssaf.service.ZipcodeService;
 
 @Controller
 @RequestMapping("/")
@@ -32,7 +33,7 @@ public class AppController {
     private StateService stateService;
 
     @Autowired
-    private ZipService zipService;
+    private ZipcodeService zipService;
 
     @Autowired
     private MessageSource messageSource;
@@ -54,7 +55,7 @@ public class AppController {
     }
 
     @RequestMapping(value = { "/new"}, method = RequestMethod.POST)
-    public String saveState(@Valid State state, BindingResult result, ModelMap model){
+    public String saveState(@Valid @ModelAttribute("state") State state, BindingResult result, ModelMap model){
         if(result.hasErrors()){
             return "stateRegistration";
         }

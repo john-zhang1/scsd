@@ -3,53 +3,55 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.csscience.cssaf.app.saf;
+package org.csscience.cssaf.service.impl;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
+import org.csscience.cssaf.content.Album;
 import org.csscience.cssaf.core.Constants;
 import org.csscience.cssaf.csv.CSVLine;
-import org.csscience.cssaf.csv.SampleUtils;
 import org.csscience.cssaf.service.CSService;
-import org.csscience.cssaf.service.impl.CSServiceImpl;
+import org.csscience.cssaf.service.CSVService;
+import org.csscience.cssaf.service.SAFService;
 import org.csscience.cssaf.utils.CommonUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
+public class SAFServiceImpl implements SAFService {
 
-public class SAF {
-    protected List<CSVLine> newData;
-    protected List<CSVLine> existingData;
-    protected List<CSVLine> imageData;
-    private static CSService servicesFactory = CSServiceImpl.getInstance();
-    private static SampleUtils Samples = new SampleUtils();
+    private final String licensePath = "/usr/share/tomcat/webapps/scsd/WEB-INF/classes/collection/license.txt";
+    private final String safNewPath = "/usr/share/tomcat/webapps/scsd/downloads/saf-new/";
+    private final String existNewPath = "/usr/share/tomcat/webapps/scsd/downloads/saf-existing/";
+    private final String photoDirectory = "/usr/share/tomcat/webapps/scsd/temp/images";
     
-    public SAF(){
-        this.newData = Samples.adjustedNewDataCSV();
-        this.existingData = Samples.getExitingDataCSV();
-        this.imageData = servicesFactory.getImageData();
-    }
-    
-    public void createExitingDataSAF()
-    {
-        String directory = servicesFactory.getPath("saf.existing");
-        CommonUtils.createDirectory(directory);
-        String photoDirectory = servicesFactory.getPath("data.photos");
-        String mapfileName = directory + "mapfile";
+    @Autowired
+    private CSVService cSVService;
+
+    @Override
+    public void createExitingDataSAF() {
+        CommonUtils.createDirectory(existNewPath);
+        String mapfileName = existNewPath + "mapfile";
         StringBuilder builder = new StringBuilder();
         CommonUtils.writeFile(mapfileName, StringUtils.EMPTY);
-        String defaultLicenseFile = servicesFactory.getPath("library.dir") + "license.txt";
+        String defaultLicenseFile = licensePath;
         String licenseText = CommonUtils.getLicenseText(defaultLicenseFile);
         int i = 1;
 
+        List<CSVLine> existingData = cSVService.getExitingDataCSV();
+
         for(CSVLine csv : existingData)
         {
-            String subDir = directory + Integer.toString(i) + "/";
+            String subDir = existNewPath + Integer.toString(i) + "/";
             CommonUtils.createDirectory(subDir);
             
             // Copy images
-            List<String> imageNames = copyImages(csv, photoDirectory, subDir);
+            List<String> imageNames = copyImages(csv, subDir);
 
             // Write Contents file
             String contents = CommonUtils.getContents(imageNames);
@@ -90,24 +92,24 @@ public class SAF {
         }
         // Write mapfile                
         CommonUtils.writeFile(mapfileName, builder.toString());
-     }
-    
-    public void createNewDataSAF()
-    {
-        String directory = servicesFactory.getPath("saf.new");
-        CommonUtils.createDirectory(directory);
-        String photoDirectory = servicesFactory.getPath("data.photos");
-        String defaultLicenseFile = servicesFactory.getPath("library.dir") + "license.txt";
+    }
+
+    @Override
+    public void createNewDataSAF() {
+        CommonUtils.createDirectory(safNewPath);
+        String defaultLicenseFile = licensePath;
         String licenseText = CommonUtils.getLicenseText(defaultLicenseFile);
         int i = 1;
-        
+
+        List<CSVLine> newData = cSVService.getNewDataCSV();
+
         for(CSVLine csv : newData)
         {
-            String subDir = directory + Integer.toString(i) + "/";
+            String subDir = safNewPath + Integer.toString(i) + "/";
             CommonUtils.createDirectory(subDir);
 
             // Copy images
-            List<String> imageNames = copyImages(csv, photoDirectory, subDir);
+            List<String> imageNames = copyImages(csv, subDir);
 
             // Write Contents file
             String contents = CommonUtils.getContents(imageNames);
@@ -132,10 +134,12 @@ public class SAF {
         }
     }
 
-    /** get images for each sample */
-    private List<String> copyImages(CSVLine csv, String photoDirectory, String dest){
+    @Override
+    public List<String> copyImages(CSVLine csv, String dest) {
         String sampleID = csv.get("dwc.npdg.sampleid").get(0);
         List<String> imageNames = new ArrayList<>();
+        List<CSVLine> imageData = getImageData();
+
         for(CSVLine image : imageData)
         {
             String id = image.getId();
@@ -180,4 +184,16 @@ public class SAF {
         }
         return imageNames;
     }
+
+    public List<CSVLine> getImageData() {
+        List<CSVLine> imageData = null;
+        try {
+            Album album = new Album(photoDirectory);
+            imageData = album.imageLines;
+        } catch (Exception ex) {
+            Logger.getLogger(CSService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return imageData;
+    }
+
 }

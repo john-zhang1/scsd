@@ -19,8 +19,8 @@ import org.csscience.cssaf.content.Album;
 import org.csscience.cssaf.csv.CSV;
 import org.csscience.cssaf.csv.CSVLine;
 import org.csscience.cssaf.service.CSService;
-import org.csscience.cssaf.service.ZipService;
 import org.csscience.cssaf.service.impl.CSServiceImpl;
+import org.csscience.cssaf.service.ZipcodeService;
 
 /**
  *
@@ -169,7 +169,7 @@ public class Validation {
 
         List<String> invalidZipcodes = new ArrayList<>();
         List<CSVLine> csdData = servicesFactory.getCSDData();
-        ZipService zipService = servicesFactory.getZipService();
+        ZipcodeService zipService = servicesFactory.getZipService();
         
         for(CSVLine csv : csdData)
         {

@@ -12,7 +12,7 @@ import org.csscience.cssaf.content.Zip;
  *
  * @author john
  */
-public interface ZipService {
+public interface ZipcodeService {
 
     public List<Zip> findAll();
     

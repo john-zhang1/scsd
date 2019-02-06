@@ -34,5 +34,6 @@
     </table>
     <br/>
     <a href="<c:url value='/new' />">Add New State</a>
+    <a href="<c:url value='/csvFileUpload' />">Validate CSV</a>
 </body>
 </html>

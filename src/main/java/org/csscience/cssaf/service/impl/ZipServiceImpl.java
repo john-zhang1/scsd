@@ -9,10 +9,10 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.csscience.cssaf.content.Zip;
 import org.csscience.cssaf.dao.ZipDao;
-import org.csscience.cssaf.service.ZipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.csscience.cssaf.service.ZipcodeService;
 
 /**
  *
@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional
-public class ZipServiceImpl implements ZipService {
+public class ZipServiceImpl implements ZipcodeService {
 
     private static Logger log = Logger.getLogger(ZipServiceImpl.class);
 

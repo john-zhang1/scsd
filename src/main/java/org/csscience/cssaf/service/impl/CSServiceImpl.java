@@ -17,10 +17,10 @@ import org.csscience.cssaf.csv.CSV;
 import org.csscience.cssaf.csv.CSVLine;
 import org.csscience.cssaf.service.CSService;
 import org.csscience.cssaf.service.StateService;
-import org.csscience.cssaf.service.ZipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
+import org.csscience.cssaf.service.ZipcodeService;
 
 /**
  *
@@ -34,7 +34,7 @@ public class CSServiceImpl implements CSService {
     private StateService stateService;
 
     @Autowired
-    private ZipService zipService;
+    private ZipcodeService zipService;
 
     private Properties prop = context.getBean(LocalConfiguration.class).localProperties();    
     private static CSService cSService = null;
@@ -68,9 +68,9 @@ public class CSServiceImpl implements CSService {
     }
 
     @Override
-    public ZipService getZipService() {
+    public ZipcodeService getZipService() {
         if(zipService == null){
-            zipService = (ZipService) context.getBean(ZipService.class);
+            zipService = (ZipcodeService) context.getBean(ZipcodeService.class);
         }
         return zipService;
     }

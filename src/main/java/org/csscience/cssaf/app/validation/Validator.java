@@ -8,8 +8,8 @@ package org.csscience.cssaf.app.validation;
 import java.math.BigDecimal;
 import org.csscience.cssaf.content.Zip;
 import org.csscience.cssaf.service.CSService;
-import org.csscience.cssaf.service.ZipService;
 import org.csscience.cssaf.service.impl.CSServiceImpl;
+import org.csscience.cssaf.service.ZipcodeService;
 
 /**
  *
@@ -27,7 +27,7 @@ public class Validator {
         v.validateZipcode();
 
 //        CSService servicesFactory = CSServiceImpl.getInstance();
-//        ZipService zipService = servicesFactory.getZipService();
+//        ZipcodeService zipService = servicesFactory.getZipService();
 //        
 //        Zip zip = new Zip();
 //        zip.setCity("Homer Glen");

@@ -6,7 +6,7 @@
 package org.csscience.cssaf.content.factory;
 
 import org.csscience.cssaf.service.StateService;
-import org.csscience.cssaf.service.ZipService;
+import org.csscience.cssaf.service.ZipcodeService;
 
 /**
  *
@@ -16,6 +16,6 @@ public abstract class ContentServiceFactory {
     
     public abstract StateService getStateService();
     
-    public abstract ZipService getZipService();
+    public abstract ZipcodeService getZipService();
 
 }
