@@ -38,7 +38,7 @@ public class AppController {
     @Autowired
     private MessageSource messageSource;
 
-    @RequestMapping(value = { "/", "/statelist" }, method = RequestMethod.GET)
+    @RequestMapping(value = "/statelist", method = RequestMethod.GET)
     public String listStates(ModelMap model) {
 
         List<State> states = stateService.findAll();

@@ -20,11 +20,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.csscience.cssaf.content.Album;
+import org.csscience.cssaf.content.Zip;
 import org.csscience.cssaf.csv.CSV;
 import org.csscience.cssaf.csv.CSVLine;
+import org.csscience.cssaf.service.CSVService;
 import org.csscience.cssaf.service.ValidateService;
+import org.csscience.cssaf.service.ZipcodeService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +39,12 @@ public class ValidateServiceImpl implements ValidateService {
 
     private static Logger log = Logger.getLogger(ZipServiceImpl.class);
 
+    @Autowired
+    private ZipcodeService zipcodeService;
+    
+    @Autowired
+    private CSVService cSVService;
+    
     @Override
     public Map<String, ArrayList> validatePhotoNameFormat(String sourceDir) {
 
@@ -84,6 +95,7 @@ public class ValidateServiceImpl implements ValidateService {
         if(errors.get("invalidNames").size() > 0 || errors.get("invalidPairs").size() > 0){
             try {
                 FileUtils.deleteDirectory(directory);
+                
             } catch (IOException ex) {
                 java.util.logging.Logger.getLogger(ValidateServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -98,6 +110,7 @@ public class ValidateServiceImpl implements ValidateService {
         Map<String, ArrayList> errors = new HashMap<>();
         errors.put("invalidHeadings", new ArrayList<>());
         errors.put("invalidZipFormat", new ArrayList<>());
+        errors.put("zipAddressNotMached", new ArrayList<>());
 
         // Check with the headings format
         File fHeadings = file;
@@ -144,19 +157,36 @@ public class ValidateServiceImpl implements ValidateService {
         for(CSVLine line : lines)
         {
             items = line.getItems();
+            String zip;
+            long zipCode;
             // Check with zip format XXXXX
             try{
                 if(!items.get("dwc.npdg.homezip").isEmpty()){
-                    String zip = (String)items.get("dwc.npdg.homezip").get(0);
-                    long zipCode = Long.parseLong(zip);
+                    zip = (String)items.get("dwc.npdg.homezip").get(0);
+                    zipCode = Long.parseLong(zip);
                     if(zipCode > 99999 || zipCode < 1){
                         errors.get("invalidZipFormat").add(line.getId());
-                    }                    
+                    }
                 }else{
                     errors.get("invalidZipFormat").add(line.getId());
                 }
+                if(!(items.get("dwc.npdg.homestate").isEmpty() || items.get("dwc.npdg.homecity").isEmpty() || items.get("dwc.npdg.homezip").isEmpty())){
+                    zip = (String)items.get("dwc.npdg.homezip").get(0);
+                    String state = (String)items.get("dwc.npdg.homestate").get(0);
+                    String city = (String)items.get("dwc.npdg.homecity").get(0);
+                    if(!isZipPlaceMatched(zip, state, city)){
+                        errors.get("zipAddressNotMached").add(line.getId());
+                    }
+                }else{
+                    errors.get("zipAddressNotMached").add(line.getId());
+                }
             }catch(NumberFormatException e){
             }
+        }
+
+        // If csv file contains errors, remove the file
+        if(errors.get("invalidHeadings").size()>0 || errors.get("invalidZipFormat").size()>0 || errors.get("zipAddressNotMached").size()>0){
+            file.delete();
         }
 
         return errors;
@@ -198,6 +228,83 @@ public class ValidateServiceImpl implements ValidateService {
         String pattern = "^[^0]\\d+_[R|T]\\s2.jpg$";
         isMatched = name.matches(pattern);
         return isMatched;
+    }
+
+    private boolean isZipPlaceMatched(String homeZip, String homeState, String homeCity){
+        boolean isMatched = false;
+        Zip zip = zipcodeService.findByZip(homeZip);
+        String state = null;
+        String city = null;
+        
+        if(zip == null){
+            return false;
+        }else{
+            state = zip.getShortState();
+            city = zip.getCity();
+            if(zip != null || StringUtils.equals(homeState, state) || StringUtils.equals(homeCity, city)){
+                isMatched = true;
+            }            
+        }
+
+        return isMatched;
+    }
+
+    @Override
+    public Map<String, ArrayList> validateTaxonomy() {
+
+        //To do validate if ip address contains white space
+
+        Map<String, ArrayList> errors = new HashMap<>();
+        errors.put("invalidInternalCode", new ArrayList<>());
+
+        List<CSVLine> collectionData = cSVService.getCollectionTaxonomyData();
+        List<CSVLine> LinksData = cSVService.getLinksData();
+
+        for(CSVLine link : LinksData)
+        {
+            String internalCode = null;
+            if(link.getItems() != null){
+                if(link.getItems().get("dwc.npdg.internalcode") != null && link.getItems().get("dwc.npdg.internalcode").size() > 0){
+                    internalCode = (String)link.getItems().get("dwc.npdg.internalcode").get(0);
+                }else{
+                     errors.get("invalidInternalCode").add(internalCode);
+                }
+            }
+
+            String handle = null;
+            boolean isInternalCodeFound = false;
+            for(CSVLine line : collectionData)
+            {
+                String internalID = null;
+                if(line.getItems() != null)
+                {
+                    if(line.getItems().get("dwc.npdg.internalcode") != null && line.getItems().get("dwc.npdg.internalcode").size() > 0){
+                        internalID = (String)line.getItems().get("dwc.npdg.internalcode").get(0);
+                    }else if(line.getItems().get("dwc.npdg.internalcode[]") != null && line.getItems().get("dwc.npdg.internalcode[]").size() > 0){
+                        internalID = (String)line.getItems().get("dwc.npdg.internalcode[]").get(0);
+                    }
+                }
+                if(internalCode != null && internalID != null)
+                {
+                    if(StringUtils.equals(internalCode, internalID)){
+                        if(line.getItems() != null)
+                        {
+                            if(line.getItems().get("dc.identifier.uri") != null && line.getItems().get("dc.identifier.uri").size() > 0){
+                                handle = (String)line.getItems().get("dc.identifier.uri").get(0);
+                            }else if(line.getItems().get("dc.identifier.uri[]") != null && line.getItems().get("dc.identifier.uri[]").size() > 0){
+                                handle = (String)line.getItems().get("dc.identifier.uri[]").get(0);
+                            }
+                        }
+                        isInternalCodeFound = true;
+                        break;
+                    }
+                }
+            }
+            if(handle == null || !isInternalCodeFound){
+                errors.get("invalidInternalCode").add(internalCode);
+            }
+        }
+        return errors;
     }
 
 }

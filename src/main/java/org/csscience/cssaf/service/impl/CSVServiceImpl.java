@@ -12,58 +12,59 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.lang.StringUtils;
-import org.csscience.cssaf.content.Album;
 import org.csscience.cssaf.csv.CSV;
 import org.csscience.cssaf.csv.CSVLine;
-import org.csscience.cssaf.service.CSBatchService;
 import org.csscience.cssaf.service.CSService;
 import org.csscience.cssaf.service.CSVService;
 import org.csscience.cssaf.service.StateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.csscience.cssaf.service.ZipcodeService;
+import org.csscience.cssaf.utils.CommonUtils;
 
 @Service
 public class CSVServiceImpl implements CSVService {
 
+    private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(StateServiceImpl.class);
+
+    private List<CSVLine> collectionTaxonomyData = null;
+    
+
     @Autowired
     private StateService stateService;
-    
+
     @Autowired
     private ZipcodeService zipService;
-    
-    private final String collectionCSV = "/usr/share/tomcat/webapps/scsd/WEB-INF/classes/collection/collection.csv";
-    private final String csdFile = "/usr/share/tomcat/webapps/scsd/temp/csd.csv";
-    private final String photoDir = "/usr/share/tomcat/webapps/scsd/temp/photos";
 
-    protected List<CSVLine> collectionData = null;
-    protected List<CSVLine> csdData = null;
+    private final String collectionCSV = "/usr/share/tomcat/webapps/scsd/temp/collection.csv";
+    private final String collectionTaxonomyCSV = "/usr/share/tomcat/webapps/scsd/temp/collection_taxonomies.csv";
+    private final String collectionLinkCSV = "/usr/share/tomcat/webapps/scsd/temp/links.csv";
+    private final String csdFile = "/usr/share/tomcat/webapps/scsd/temp/csd.csv";
 
     @Override
     public List<CSVLine> getCSDData() {
-        if(csdData == null){
-            File f = new File(csdFile);
-            try {
-                CSV csv = new CSV(f);
-                csdData = csv.lines;
-            } catch (Exception ex) {
-                Logger.getLogger(CSService.class.getName()).log(Level.SEVERE, null, ex);
-            }            
-        }
+        List<CSVLine> csdData = null;
+        File f = new File(csdFile);
+        try {
+            CSV csv = new CSV(f);
+            csdData = csv.lines;
+        } catch (Exception ex) {
+            Logger.getLogger(CSService.class.getName()).log(Level.SEVERE, null, ex);
+        }            
+
         return csdData;
     }
 
     @Override
     public List<CSVLine> getCollectionData() {
-        if(collectionData == null){
-            File f = new File(collectionCSV);
-            try {
-                CSV csv = new CSV(f);
-                collectionData = csv.lines;
-            } catch (Exception ex) {
-                Logger.getLogger(CSBatchService.class.getName()).log(Level.SEVERE, null, ex);
-            }            
-        }
+        List<CSVLine> collectionData = null;
+        File f = new File(collectionCSV);
+        try {
+            CSV csv = new CSV(f);
+            collectionData = csv.lines;
+        } catch (Exception ex) {
+            Logger.getLogger(CSVService.class.getName()).log(Level.SEVERE, null, ex);
+        }            
 
         return collectionData;
     }
@@ -72,15 +73,16 @@ public class CSVServiceImpl implements CSVService {
     public List<CSVLine> getExitingDataCSV() {
         List<CSVLine> existingCSV = new ArrayList<>();
         List<CSVLine> csd = getCSDData();
-        
-        for(CSVLine sample : collectionData){
-            String sampleID = sample.get("dwc.npdg.sampleid[]").get(0);
-            if(sampleID != null && !"".equals(sampleID))
-            {
-                for(CSVLine cs : csd){
-                    String csSampleID = cs.get("dwc.npdg.sampleid").get(0);
-                    if(csSampleID != null && !"".equals(csSampleID) && sampleID.equals(csSampleID))
-                    {
+        List<CSVLine> collectionData = getCollectionData();
+
+        for(CSVLine cs : csd){
+            String csSampleID = cs.get("dwc.npdg.sampleid").get(0);
+            System.out.println(csSampleID);
+            if(csSampleID != null && !"".equals(csSampleID)){
+                for(CSVLine sample : collectionData){
+                    String sampleID = sample.get("dwc.npdg.sampleid[]").get(0);
+                    System.out.println(sampleID);
+                    if(sampleID.equals(csSampleID)){
                         CSVLine updated = adjustedExistingDataCSV(sample, cs);
                         existingCSV.add(updated);
                     }
@@ -121,7 +123,8 @@ public class CSVServiceImpl implements CSVService {
 
     @Override
     public List<CSVLine> adjustedNewDataCSV() {
-        List<CSVLine> newCSV = getNewDataCSV();
+        List<CSVLine> newCSV = null;
+        newCSV = getNewDataCSV();
         String keyState = "dwc.npdg.homestate";
         String keyZip = "dwc.npdg.homezip";
         String keySpatial = "dwc.npdg.spatial";
@@ -149,7 +152,7 @@ public class CSVServiceImpl implements CSVService {
 
     @Override
     public CSVLine adjustedExistingDataCSV(CSVLine existingSample, CSVLine newSample) {
-        CSVLine existingCSV = mergeColumns(existingSample);
+        CSVLine existingCSV = CommonUtils.mergeColumns(existingSample);
         Set<String> keysExisting = existingCSV.keys();
         Set<String> keysNew = newSample.keys();
         
@@ -171,18 +174,32 @@ public class CSVServiceImpl implements CSVService {
         }
         return existingCSV;
     }
-    
-    /** for citizen science collection csv form
-     * @param sample */
-    private CSVLine mergeColumns(CSVLine sample){
-        CSVLine csv = new CSVLine(sample.getId());
-        Set<String> keys = sample.keys();
-        for(String key : keys)
-        {
-            String k = key.split("\\[")[0];
-            csv.addAll(k, sample.get(key));
+
+    @Override
+    public List<CSVLine> getCollectionTaxonomyData() {
+        if(collectionTaxonomyData==null){
+            File f = new File(collectionTaxonomyCSV);
+            try {
+                CSV csv = new CSV(f);
+                collectionTaxonomyData = csv.lines;
+            } catch (Exception ex) {
+                Logger.getLogger(CSVServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }            
         }
-        return csv;
+        return collectionTaxonomyData;
+    }
+
+    @Override
+    public List<CSVLine> getLinksData() {
+        List<CSVLine> csdData = null;
+        File f = new File(collectionLinkCSV);
+        try {
+            CSV csv = new CSV(f);
+            csdData = csv.lines;
+        } catch (Exception ex) {
+            Logger.getLogger(CSVServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return csdData;        
     }
 
 }

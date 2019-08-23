@@ -1,29 +1,38 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <title>SAF Upload Form</title>
+        <title>Points Json</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
         <style><%@include file="/WEB-INF/css/nav-top-fixed.css"%></style>
     </head>
     <body>
         <%@include file="/WEB-INF/views/navbar.html"%>
-        <h3>Upload CSV file to Validate</h3>
-
-        <form:form method="POST" action="/scsd/csvFileUpload" enctype="multipart/form-data">
-            <table>
-                <tr>
-                    <td>Select a file to upload</td>
-                    <td><input type="file" name="file" /></td>
-                </tr>
-                <tr>
-                    <td><input type="submit" value="Submit" /></td>
-                </tr>
-            </table>
-        </form:form>
+        <h3>Points Json File</h3>
+        <table>
+            <tr>
+                <c:choose>
+                    <c:when test="${next}">
+                        <td>Download Json File:</td>
+                        <td><a href="<c:url value='/downloads/points' />">points.json</a></td>
+                    </c:when>
+                    <c:otherwise>
+                        <form:form method="POST" action="/scsd/generatePoints" enctype="multipart/form-data">
+                            <table>
+                                <tr>
+                                    <td><input type="submit" value="Generate" /></td>
+                                </tr>
+                            </table>
+                        </form:form>
+                    </c:otherwise>
+                </c:choose>
+            </tr>
+        </table>
 
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
         <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>

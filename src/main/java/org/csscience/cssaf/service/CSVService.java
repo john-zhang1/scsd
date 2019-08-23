@@ -30,4 +30,8 @@ public interface CSVService {
      * @return existingCSV */
     public CSVLine adjustedExistingDataCSV(CSVLine existingSample, CSVLine newSample);
 
+    public List<CSVLine> getCollectionTaxonomyData();
+
+    public List<CSVLine> getLinksData();
+
 }

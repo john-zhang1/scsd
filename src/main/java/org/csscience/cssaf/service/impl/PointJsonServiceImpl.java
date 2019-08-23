@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.csscience.cssaf.app.marker;
+package org.csscience.cssaf.service.impl;
 
-import java.io.File;
+import com.google.gson.Gson;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -13,46 +13,40 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import com.google.gson.Gson;
-import java.nio.file.Files;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.csscience.cssaf.app.marker.PointJson;
 import org.csscience.cssaf.csv.CSVLine;
-import org.csscience.cssaf.service.CSService;
-import org.csscience.cssaf.service.impl.CSServiceImpl;
+import org.csscience.cssaf.service.CSVService;
+import org.csscience.cssaf.service.PointJsonService;
 import org.csscience.cssaf.utils.CommonUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-/**
- *
- * @author john
- */
-public class PointJson {
-    protected final List<CSVLine> collectionData = CSServiceImpl.getInstance().getCollectionData();
-    private static CSService servicesFactory = CSServiceImpl.getInstance();
-            
-    public PointJson(){
-        
-    }
+@Service
+public class PointJsonServiceImpl implements PointJsonService {
 
-    protected void writeJsonFile(){
-        String file = servicesFactory.getPath("saf.pointjson");
-        File f = new File(file);
-        if(Files.exists(f.toPath())){
-            String dateDir = servicesFactory.getPath("date.dir");
-            CommonUtils.createDirectory(dateDir);
-        }
+    public final String jsonFile = "/usr/share/tomcat/webapps/scsd/downloads/points.json";
+
+    @Autowired
+    private CSVService cSVService;
+
+    @Override
+    public boolean writeJsonFile() {
+
+        boolean success = false;
+        List<CSVLine> collectionData = cSVService.getCollectionData();
 
         try
         {
-            FileOutputStream fos = new FileOutputStream(file);
+            FileOutputStream fos = new FileOutputStream(jsonFile);
             OutputStreamWriter osr = new OutputStreamWriter(fos, "UTF-8");
             PrintWriter out = new PrintWriter(osr);
             out.print("{\"points\": [");
             
             CSVLine firstLine = collectionData.get(0);
             CSVLine firstCsv = getPoint(firstLine);
-            Point firstPoint = new Point(firstCsv.getItems());
+            PointJson.Point firstPoint = new PointJson.Point(firstCsv.getItems());
             String firstPointString = toJson(firstPoint);
             out.print(firstPointString);
             collectionData.remove(0);
@@ -61,7 +55,7 @@ public class PointJson {
             {
                 CSVLine csv = getPoint(line);
                 Map<String, ArrayList> items = csv.getItems();
-                Point point = new Point(items);
+                PointJson.Point point = new PointJson.Point(items);
                 String pointString = toJson(point);
                 pointString = "," + pointString;
                 out.print(pointString);
@@ -69,22 +63,18 @@ public class PointJson {
             
             out.print("]}");
             out.close();
+            success = true;
         } catch (IOException e)
         {
             Logger.getLogger(PointJson.class.getName()).log(Level.SEVERE, null, e);
             System.out.println(e);
             System.exit(1);
         }
+        return success;
     }
-    
-    /** Get point data as string for print */
-    public String toJson(Point point) {
-        Gson gson = new Gson();
-        return gson.toJson(point);
-    }
-    
-    /** */
-    public CSVLine getPoint(CSVLine line){
+
+    @Override
+    public CSVLine getPoint(CSVLine line) {
         String spatial = "dwc.npdg.spatial";
         String internalcode = "dwc.npdg.internalcode";
         String uri = "dc.identifier.uri";
@@ -92,7 +82,7 @@ public class PointJson {
         String state = "dwc.npdg.homestate";
         String zip = "dwc.npdg.homezip";
         CSVLine point = null;
-        CSVLine csv = mergeColumns(line);
+        CSVLine csv = CommonUtils.mergeColumns(line);
         Map<String, ArrayList> items = csv.getItems();
         
         point = new CSVLine(csv.getId());
@@ -116,17 +106,10 @@ public class PointJson {
         return point;
     }
 
-    /** For citizen science collection csv form */
-    public CSVLine mergeColumns(CSVLine sample){
-        CSVLine csv = new CSVLine(sample.getId());
-        Set<String> keys = sample.keys();
-        for(String key : keys)
-        {
-            String k = key.split("\\[")[0];
-            csv.addAll(k, sample.get(key));
-        }
-
-        return csv;
+    /** Get point data as string for print */
+    public String toJson(PointJson.Point point) {
+        Gson gson = new Gson();
+        return gson.toJson(point);
     }
 
     public static final class Point {

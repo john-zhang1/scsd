@@ -14,10 +14,6 @@ import org.springframework.stereotype.Repository;
 import org.csscience.cssaf.dao.StateDao;
 import org.hibernate.Query;
 
-/**
- *
- * @author john
- */
 @Repository
 public class StateDaoImpl extends AbstractDao implements StateDao{
 

@@ -31,7 +31,10 @@ public class ZipDaoImpl extends AbstractDao implements ZipDao{
     @Override
     public Zip findByZip(String zip) {
         Criteria criteria = getSession().createCriteria(Zip.class);
-        criteria.add(Restrictions.eq("zip", zip));
+        // In case zip has pattern 05445
+        int num = Integer.parseInt(zip);
+        String numString = Integer.toString(num);
+        criteria.add(Restrictions.eq("zip", numString));
         return (Zip)criteria.uniqueResult();
     }
 

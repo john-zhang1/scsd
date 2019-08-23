@@ -19,8 +19,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,10 +32,7 @@ import org.csscience.cssaf.app.saf.SAF;
 import org.csscience.cssaf.core.Constants;
 import org.csscience.cssaf.csv.CSVLine;
 
-/**
- *
- * @author john
- */
+
 public class CommonUtils {
     public static void createDirectory(String directory){
         File dir = new File(directory);
@@ -73,10 +72,6 @@ public class CommonUtils {
             Logger.getLogger(SAF.class.getName()).log(Level.SEVERE, null, e);
             System.exit(0);
         }
-    }
-    
-    public static boolean ifDirectoryExists(File f){
-        return Files.exists(f.toPath());
     }
 
     /** template of metadata_xml file */ 
@@ -243,5 +238,41 @@ public class CommonUtils {
                 metadataString = head;
         }
         return metadataString;
+    }
+
+
+    /** for citizen science collection csv form
+     * @param sample */
+    public static CSVLine mergeColumns(CSVLine sample){
+        CSVLine csv = new CSVLine(sample.getId());
+        Set<String> keys = sample.keys();
+        for(String key : keys)
+        {
+            String k = key.split("\\[")[0];
+            csv.addAll(k, sample.get(key));
+        }
+
+        return csv;
+    }
+
+    /** Check if directory or file exists and backup old data
+     * @param dest
+     */
+    public static boolean detectOrRenameSAF(String dest){
+        boolean renamed = false;
+        File f = new File(dest);
+        String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+        File nf = new File(f + "_" + timeStamp);
+        
+        if(f.exists()){
+            try{
+                f.renameTo(nf);
+                renamed = true;
+            }catch(Exception ex){
+            }
+        }else{
+            renamed = true;
+        }
+        return renamed;
     }
 }

@@ -28,7 +28,7 @@ public class SAFServiceImpl implements SAFService {
     private final String licensePath = "/usr/share/tomcat/webapps/scsd/WEB-INF/classes/collection/license.txt";
     private final String safNewPath = "/usr/share/tomcat/webapps/scsd/downloads/saf-new/";
     private final String existNewPath = "/usr/share/tomcat/webapps/scsd/downloads/saf-existing/";
-    private final String photoDirectory = "/usr/share/tomcat/webapps/scsd/temp/images";
+    private final String photoDirectory = "/usr/share/tomcat/webapps/scsd/temp/photos/";
     
     @Autowired
     private CSVService cSVService;
@@ -101,7 +101,7 @@ public class SAFServiceImpl implements SAFService {
         String licenseText = CommonUtils.getLicenseText(defaultLicenseFile);
         int i = 1;
 
-        List<CSVLine> newData = cSVService.getNewDataCSV();
+        List<CSVLine> newData = cSVService.adjustedNewDataCSV();
 
         for(CSVLine csv : newData)
         {
@@ -185,6 +185,7 @@ public class SAFServiceImpl implements SAFService {
         return imageNames;
     }
 
+    @Override
     public List<CSVLine> getImageData() {
         List<CSVLine> imageData = null;
         try {

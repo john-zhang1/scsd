@@ -35,6 +35,7 @@ nb-configuration.xml
 ## KEPT FOR BACKWARDS COMPATIBILITY WITH 5.x (build.properties is now replaced with local.cfg)
 /*.properties
 !/build.properties
+/*.log
 
 # Ignore resource csv files
 *.csv

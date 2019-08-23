@@ -14,6 +14,8 @@ public interface ValidateService {
     public Map<String, ArrayList> validatePhotoNameFormat(String sourceDir);
 
     public Map<String, ArrayList> validateCSV(File file);
-    
+
     public Map<String, ArrayList> validateZipcode();
+
+    public Map<String, ArrayList> validateTaxonomy();
 }
