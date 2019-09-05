@@ -2,7 +2,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Fixed top navbar example for Bootstrap</title>
+    <title>SCSD Tool</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
     <style><%@include file="/WEB-INF/css/nav-top-fixed.css"%></style>
 </head>
@@ -14,7 +14,7 @@
       <div class="jumbotron">
         <h1>SCSD Tool</h1>
         <p class="lead">This web application is a simple tool to validate special data formats and generate files and packages for data ingestion.</p>
-        <!--<a class="btn btn-lg btn-primary" href="../../components/navbar/" role="button">View navbar docs »</a>-->
+        <!--<a class="btn btn-lg btn-primary" href="../../components/navbar/" role="button">View navbar docs</a>-->
       </div>
     </main>
 

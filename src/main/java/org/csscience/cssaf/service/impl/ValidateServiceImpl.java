@@ -148,12 +148,14 @@ public class ValidateServiceImpl implements ValidateService {
         // Check with contents
         File f = file;
         CSV csv = null;
+        List<CSVLine> lines = null;
         try {
             csv = new CSV(f);
+            lines = csv.lines;
         } catch (Exception ex) {
             java.util.logging.Logger.getLogger(ValidateServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
-        List<CSVLine> lines = csv.lines;
+
         for(CSVLine line : lines)
         {
             items = line.getItems();

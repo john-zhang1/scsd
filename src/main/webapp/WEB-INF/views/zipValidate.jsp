@@ -32,7 +32,7 @@
                     <c:when test="${next}">
                         <td>Create SAF Package</td>
                         <td><a href="<c:url value='/createSAF' />">Create SAF Package</a></td>
-                        <td><a href="<c:url value='/zipUpload' />">Upload a new zip file</a></td>
+                        <%-- <td><a href="<c:url value='/zipUpload' />">Upload a new zip file</a></td> --%>
                     </c:when>
                     <c:otherwise>
                         <td><a href="<c:url value='/zipReturn' />">Correct the photo names and upload zip file again</a></td>

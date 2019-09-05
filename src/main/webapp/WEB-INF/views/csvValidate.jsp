@@ -29,7 +29,7 @@
                 <td>${errors.get("zipAddressNotMached").toString()}</td>
             </tr>
             <tr>
-                <td>File name :</td>
+                <td>You have uploaded file:</td>
                 <td>${file.originalFilename}</td>
             </tr>
             <tr>

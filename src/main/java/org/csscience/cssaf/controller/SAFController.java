@@ -19,7 +19,6 @@ import java.util.UUID;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.io.FileUtils;
 import org.csscience.cssaf.service.BatchService;
 import org.csscience.cssaf.service.PointJsonService;
 import org.csscience.cssaf.service.SAFService;
@@ -120,7 +119,6 @@ public class SAFController {
     @RequestMapping(value="/zipFileUpload", method = RequestMethod.POST)
     public String zipFileUpload(@RequestParam("file") final MultipartFile file, final ModelMap model) throws IOException, Exception {
         String uploadPath = context.getRealPath("") + File.separator + "temp" + File.separator;
-        File path = new File(uploadPath);
         String zipFileName = UUID.randomUUID().toString() + ".zip";
         String newZipFile = uploadPath + zipFileName;
         FileCopyUtils.copy(file.getBytes(), new File(newZipFile));
@@ -131,17 +129,17 @@ public class SAFController {
         Map<String, ArrayList> formatErrors = validateService.validatePhotoNameFormat(unzipSourceDir);        
 
         if(formatErrors.get("invalidNames").isEmpty() && formatErrors.get("invalidPairs").isEmpty()){
-            File unzipDir = new File(unzipSourceDir);
-            File unzipPhotoDir = new File(uploadPath + unzipPhotoDirectory);
-            if(unzipPhotoDir.exists() && unzipPhotoDir.isDirectory()){
-                for(String photoName : photoNames){
-                    String photo = uploadPath + photoName;
-                    File f = new File(photo);
-                    FileUtils.copyFileToDirectory(f, unzipPhotoDir, true);
-                }
-            }else{
-                unzipDir.renameTo(unzipPhotoDir);
-            }
+//            File unzipDir = new File(unzipSourceDir);
+//            File unzipPhotoDir = new File(uploadPath + unzipPhotoDirectory);
+//            if(unzipPhotoDir.exists() && unzipPhotoDir.isDirectory()){
+//                for(String photoName : photoNames){
+//                    String photo = uploadPath + photoName;
+//                    File f = new File(photo);
+//                    FileUtils.copyFileToDirectory(f, unzipPhotoDir, true);
+//                }
+//            }else{
+//                unzipDir.renameTo(unzipPhotoDir);
+//            }
             
             next = true;
         }else{

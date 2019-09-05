@@ -11,7 +11,7 @@
     </head>
     <body>
         <%@include file="/WEB-INF/views/navbar.html"%>
-        <h3>Upload CSV file to Validate</h3>
+        <h3>Upload Citizen Science Data (csv file) to Validate</h3>
 
         <form:form method="POST" action="/scsd/csvFileUpload" enctype="multipart/form-data">
             <table>
