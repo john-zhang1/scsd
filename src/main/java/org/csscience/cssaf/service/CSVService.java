@@ -12,17 +12,27 @@ public interface CSVService {
 
     public List<CSVLine> getCSDData();
 
+    public List<CSVLine> getCSDData(String sessionID);
+
     public List<CSVLine> getCollectionData();
+
+    public List<CSVLine> getCollectionData(String sessionID);
 
     /** Get a csv contains exiting samples with metadata updated */
     public List<CSVLine> getExitingDataCSV();
 
+    public List<CSVLine> getExitingDataCSV(String sessionID);
+
     /** Get a csv contains new samples */
     public List<CSVLine> getNewDataCSV();
+
+    public List<CSVLine> getNewDataCSV(String sessionID);
 
     /** Adjust new data form removing unnecessary columns and complete state and spatial data
      * @return newCSV */
     public List<CSVLine> adjustedNewDataCSV();
+
+    public List<CSVLine> adjustedNewDataCSV(String sessionID);
 
     /** update existing sample data
      * @param existingSample
@@ -32,6 +42,10 @@ public interface CSVService {
 
     public List<CSVLine> getCollectionTaxonomyData();
 
+    public List<CSVLine> getCollectionTaxonomyData(String sessionID);
+
     public List<CSVLine> getLinksData();
+
+    public List<CSVLine> getLinksData(String sessionID);
 
 }

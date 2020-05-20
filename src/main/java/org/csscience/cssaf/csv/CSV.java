@@ -127,7 +127,7 @@ public class CSV {
 
            String keyColumn = null;
            String fileName = f.getName();
-           if(fileName.equals("collection.csv") || fileName.equals("collection_taxonomies.csv")){
+           if(fileName.equals("collection.csv") || fileName.equals("collection_taxonomies.csv") || fileName.equals("taxCollection.csv")){
                keyColumn = "dwc.npdg.sampleid";
            }else if(fileName.equals("csd.csv")){
                keyColumn = "dwc.npdg.sampleid";
@@ -135,7 +135,7 @@ public class CSV {
                keyColumn = "short";
            }else if(fileName.equals("zipcode.csv")){
                keyColumn = "zip";
-           }else if(fileName.equals("links.csv")){
+           }else if(fileName.equals("links.csv") || fileName.equals("link.csv")){
                keyColumn = "Internal ID";
            }
 
@@ -152,7 +152,7 @@ public class CSV {
                 // Store the heading
                 headings.add(element);
 
-                if(fileName.equals("csd.csv") || fileName.equals("links.csv"))
+                if(fileName.equals("csd.csv") || fileName.equals("links.csv") || fileName.equals("link.csv"))
                     element = convertMetadata(element);
                 if(element.contains(keyColumn)){
                     keyPos = i;

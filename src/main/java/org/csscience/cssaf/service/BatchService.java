@@ -135,6 +135,7 @@ public interface BatchService {
     /**
      * List all entries in the photo derectory 
      * @param sourceZipFile source file
+     * @return 
      * @throws Exception if error
      */
     public List<String> listTempWorkDirFiles(String sourceZipFile) throws Exception;

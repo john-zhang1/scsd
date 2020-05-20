@@ -13,10 +13,18 @@ public interface SAFService {
 
     public void createExitingDataSAF();
 
+    public void createExitingDataSAF(String sessionID);
+
     public void createNewDataSAF();
+
+    public void createNewDataSAF(String sessionID);
 
     public List<String> copyImages(CSVLine csv, String dest);
 
+    public List<String> copyImages(CSVLine csv, String dest, String sessionID, int type);
+
     public List<CSVLine> getImageData();
+
+    public List<CSVLine> getImageData(String sessionID);
 
 }

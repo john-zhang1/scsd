@@ -9,4 +9,6 @@ public interface TaxonomyService {
 
     boolean createTaxonomySAF();
 
+    void createTaxonomySAF(String sessionID);
+
 }

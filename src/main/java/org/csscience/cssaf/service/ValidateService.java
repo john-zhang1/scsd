@@ -18,4 +18,11 @@ public interface ValidateService {
     public Map<String, ArrayList> validateZipcode();
 
     public Map<String, ArrayList> validateTaxonomy();
+
+    public Map<String, ArrayList> validateTaxonomy(String sessionID);
+
+    public Map<String, ArrayList> getRowsWithErrors(File file);
+
+    public Map<String, ArrayList> getRowsWithTaxErrors(String sessionID);
+
 }

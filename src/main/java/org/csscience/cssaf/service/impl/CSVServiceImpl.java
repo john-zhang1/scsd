@@ -36,10 +36,12 @@ public class CSVServiceImpl implements CSVService {
     @Autowired
     private ZipcodeService zipService;
 
-    private final String collectionCSV = "/usr/share/tomcat/webapps/scsd/temp/collection.csv";
-    private final String collectionTaxonomyCSV = "/usr/share/tomcat/webapps/scsd/temp/collection_taxonomies.csv";
-    private final String collectionLinkCSV = "/usr/share/tomcat/webapps/scsd/temp/links.csv";
-    private final String csdFile = "/usr/share/tomcat/webapps/scsd/temp/csd.csv";
+    private final String baseDir = "/usr/share/tomcat/webapps/scsd";
+    private final String dataDir = baseDir + File.separator + "data";
+    private final String collectionCSV = "/usr/share/tomcat/webapps/scsd/data/collection.csv";
+    private final String collectionTaxonomyCSV = "/usr/share/tomcat/webapps/scsd/data/taxCollection.csv";
+    private final String collectionLinkCSV = "/usr/share/tomcat/webapps/scsd/data/link.csv";
+    private final String csdFile = "/usr/share/tomcat/webapps/scsd/data/csd.csv";
 
     @Override
     public List<CSVLine> getCSDData() {
@@ -53,6 +55,21 @@ public class CSVServiceImpl implements CSVService {
         }            
 
         return csdData;
+    }
+
+    @Override
+    public List<CSVLine> getCSDData(String sessionID) {
+        String file = dataDir + File.separator + sessionID + "/csd.csv";
+        List<CSVLine> csdData = null;
+        File f = new File(file);
+        try {
+            CSV csv = new CSV(f);
+            csdData = csv.lines;
+        } catch (Exception ex) {
+            Logger.getLogger(CSService.class.getName()).log(Level.SEVERE, null, ex);
+        }            
+
+        return csdData;        
     }
 
     @Override
@@ -70,11 +87,50 @@ public class CSVServiceImpl implements CSVService {
     }
 
     @Override
+    public List<CSVLine> getCollectionData(String sessionID) {
+        String collectionFile = dataDir + File.separator + sessionID + "/collection.csv";
+        List<CSVLine> collectionData = null;
+        File f = new File(collectionFile);
+        try {
+            CSV csv = new CSV(f);
+            collectionData = csv.lines;
+        } catch (Exception ex) {
+            Logger.getLogger(CSVService.class.getName()).log(Level.SEVERE, null, ex);
+        }            
+
+        return collectionData;
+    }
+
+    @Override
     public List<CSVLine> getExitingDataCSV() {
         List<CSVLine> existingCSV = new ArrayList<>();
         List<CSVLine> csd = getCSDData();
         List<CSVLine> collectionData = getCollectionData();
 
+        for(CSVLine cs : csd){
+            String csSampleID = cs.get("dwc.npdg.sampleid").get(0);
+            System.out.println(csSampleID);
+            if(csSampleID != null && !"".equals(csSampleID)){
+                for(CSVLine sample : collectionData){
+                    String sampleID = sample.get("dwc.npdg.sampleid[]").get(0);
+                    System.out.println(sampleID);
+                    if(sampleID.equals(csSampleID)){
+                        CSVLine updated = adjustedExistingDataCSV(sample, cs);
+                        existingCSV.add(updated);
+                    }
+                }
+            }
+        }
+        
+        return existingCSV;
+    }
+
+    @Override
+    public List<CSVLine> getExitingDataCSV(String sessionID) {
+        List<CSVLine> existingCSV = new ArrayList<>();
+        List<CSVLine> csd = getCSDData(sessionID);
+        List<CSVLine> collectionData = getCollectionData(sessionID);
+        
         for(CSVLine cs : csd){
             String csSampleID = cs.get("dwc.npdg.sampleid").get(0);
             System.out.println(csSampleID);
@@ -122,9 +178,66 @@ public class CSVServiceImpl implements CSVService {
     }
 
     @Override
+    public List<CSVLine> getNewDataCSV(String sessionID) {
+        List<CSVLine> csd = getCSDData(sessionID);
+        List<CSVLine> newCSV = new ArrayList<>();
+        List<CSVLine> collectionData = getCollectionData(sessionID);
+
+        for(CSVLine line : csd){
+            boolean collision = false;
+            String csSampleID = line.get("dwc.npdg.sampleid").get(0);
+            if(csSampleID != null && !"".equals(csSampleID))
+            {
+                for(CSVLine sample : collectionData){
+                    String sampleID = sample.get("dwc.npdg.sampleid[]").get(0);
+                    if(StringUtils.equals(csSampleID, sampleID))
+                    {
+                        collision = true;
+                        break;
+                    }
+                }
+                if(!collision)
+                {
+                    newCSV.add(line);                    
+                }
+            }
+        }
+        return newCSV;
+    }
+
+    @Override
     public List<CSVLine> adjustedNewDataCSV() {
         List<CSVLine> newCSV = null;
         newCSV = getNewDataCSV();
+        String keyState = "dwc.npdg.homestate";
+        String keyZip = "dwc.npdg.homezip";
+        String keySpatial = "dwc.npdg.spatial";
+        String keyLib = "lib"; // ignore
+        String keyScreenStatus = "screenstatus"; // ignore
+        String fullState;
+        for(CSVLine line : newCSV)
+        {
+            String st = line.get(keyState).get(0);
+            fullState = stateService.combinedName(st);
+            line.clear(keyState);
+            line.add(keyState, fullState);
+            String zipcode = (String)line.get(keyZip).get(0);
+            // Add dwc.npdg.spatial
+            List<String> latlon = new ArrayList<>();
+            String s = zipService.getLatLon(zipcode);
+            latlon.add(s);
+            line.addAll(keySpatial, latlon);
+            
+            line.remove(keyLib);
+            line.remove(keyScreenStatus);
+        }
+        return newCSV;
+    }
+
+    @Override
+    public List<CSVLine> adjustedNewDataCSV(String sessionID) {
+        List<CSVLine> newCSV = null;
+        newCSV = getNewDataCSV(sessionID);
         String keyState = "dwc.npdg.homestate";
         String keyZip = "dwc.npdg.homezip";
         String keySpatial = "dwc.npdg.spatial";
@@ -190,6 +303,21 @@ public class CSVServiceImpl implements CSVService {
     }
 
     @Override
+    public List<CSVLine> getCollectionTaxonomyData(String sessionID) {
+        String taxCSV = dataDir + File.separator + sessionID + "/taxCollection.csv";
+        if (collectionTaxonomyData == null) {
+            File f = new File(taxCSV);
+            try {
+                CSV csv = new CSV(f);
+                collectionTaxonomyData = csv.lines;
+            } catch (Exception ex) {
+                Logger.getLogger(CSVServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return collectionTaxonomyData;
+    }
+
+    @Override
     public List<CSVLine> getLinksData() {
         List<CSVLine> csdData = null;
         File f = new File(collectionLinkCSV);
@@ -200,6 +328,22 @@ public class CSVServiceImpl implements CSVService {
             Logger.getLogger(CSVServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
         return csdData;        
+    }
+
+    @Override
+    public List<CSVLine> getLinksData(String sessionID) {
+        List<CSVLine> linkData = null;
+        String linkCSV = dataDir + File.separator + sessionID + "/link.csv";
+
+        File f = new File(linkCSV);
+        try {
+            CSV csv = new CSV(f);
+            linkData = csv.lines;
+        } catch (Exception ex) {
+            Logger.getLogger(CSVServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return linkData;        
+
     }
 
 }

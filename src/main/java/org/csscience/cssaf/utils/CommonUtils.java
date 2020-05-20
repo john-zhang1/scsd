@@ -275,4 +275,42 @@ public class CommonUtils {
         }
         return renamed;
     }
+
+    public static boolean validateZipcode(String zipCode) {
+        String regex = "\\d{5}(-\\d{4})?";
+        return zipCode.matches(regex);
+    }
+
+    public static boolean validateLatitude(String lat) {
+        String regex = "^(\\+|-)?(?:90(?:(?:\\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\\.[0-9]{1,6})?))$";
+        return lat.matches(regex);
+    }
+
+    public static boolean validateLongitude(String lon) {
+        String regex = "^(\\+|-)?(?:180(?:(?:\\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\\.[0-9]{1,6})?))$";
+        return lon.matches(regex);
+    }
+
+    public static boolean validateUrl(String url) {
+        String regex = "^((((https?|ftps?|gopher|telnet|nntp)://)|(mailto:|news:))" +
+			"(%[0-9A-Fa-f]{2}|[-()_.!~*';/?:@&=+$,A-Za-z0-9])+)" +
+			"([).!';/?:,][[:blank:]])?$";
+        return url.matches(regex);
+    }
+
+    public static String readableFileSize(long size) {
+        if (size <= 0) {
+            return "0";
+        }
+        final String[] units = new String[]{"B", "kB", "MB", "GB", "TB"};
+        int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
+        return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
+    }
+
+    public static String readableFileSize(String length) {
+        Long size = Long.parseLong(length);
+        String rsize = readableFileSize(size);
+        return rsize;
+    }
+
 }

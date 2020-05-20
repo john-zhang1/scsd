@@ -54,6 +54,7 @@ public class ZipServiceImpl implements ZipcodeService {
 
     @Override
     public boolean isZipcodeUnique(String zipcode) {
+        zipcode = Integer.valueOf(zipcode).toString();
         Zip zip = findByZip(zipcode);
         return (zip == null);
     }

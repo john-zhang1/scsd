@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,7 @@ import org.csscience.cssaf.csv.CSVLine;
 import org.csscience.cssaf.service.CSVService;
 import org.csscience.cssaf.service.ValidateService;
 import org.csscience.cssaf.service.ZipcodeService;
+import org.csscience.cssaf.utils.CommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +41,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class ValidateServiceImpl implements ValidateService {
 
     private static Logger log = Logger.getLogger(ZipServiceImpl.class);
+
+    private Map<String, ArrayList> rowsWithErrors = new HashMap<>();
+
+    private Map<String, ArrayList> rowsWithTaxErrors = new HashMap<>();
 
     @Autowired
     private ZipcodeService zipcodeService;
@@ -62,7 +69,18 @@ public class ValidateServiceImpl implements ValidateService {
                 return lowercaseName.endsWith(".jpg");
             }
         };
+
+        FilenameFilter unfilter;
+        unfilter = new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                String lowercaseName = name.toLowerCase();
+                return !lowercaseName.endsWith(".jpg");
+            }
+        };
+
         File[] listOfImages = directory.listFiles(filter);
+        File[] listOfRejectImages = directory.listFiles(unfilter);
 
         for(File f : listOfImages)
         {
@@ -83,21 +101,16 @@ public class ValidateServiceImpl implements ValidateService {
             }
         }
         
+        for(File f : listOfRejectImages) {
+            String imgName = f.getName();
+            errors.get("invalidNames").add(imgName);
+        }
+
         Set<String> keys = items.keySet();
         for(String key : keys)
         {
             if(items.get(key) != 2){
                 errors.get("invalidPairs").add(key);
-            }
-        }
-
-//        If folder contains images with error format, remove the folder
-        if(errors.get("invalidNames").size() > 0 || errors.get("invalidPairs").size() > 0){
-            try {
-                FileUtils.deleteDirectory(directory);
-                
-            } catch (IOException ex) {
-                java.util.logging.Logger.getLogger(ValidateServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
@@ -139,6 +152,10 @@ public class ValidateServiceImpl implements ValidateService {
                 errors.get("invalidHeadings").add(s);
             }
         }
+        if(errors.get("invalidHeadings").size() > 0) {
+            addAll("head", Arrays.asList(headingElements));
+        }
+
         try {
             input.close();
         } catch (IOException ex) {
@@ -156,39 +173,47 @@ public class ValidateServiceImpl implements ValidateService {
             java.util.logging.Logger.getLogger(ValidateServiceImpl.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+
         for(CSVLine line : lines)
         {
             items = line.getItems();
-            String zip;
-            long zipCode;
-            // Check with zip format XXXXX
-            try{
-                if(!items.get("dwc.npdg.homezip").isEmpty()){
-                    zip = (String)items.get("dwc.npdg.homezip").get(0);
-                    zipCode = Long.parseLong(zip);
-                    if(zipCode > 99999 || zipCode < 1){
+            boolean hasError = false;
+
+            if(!items.get("dwc.npdg.homezip").isEmpty()){
+                String zip = (String)items.get("dwc.npdg.homezip").get(0);
+                if(isNumeric(zip)) {
+                    long zipCode = Long.parseLong(zip);
+                    if(zipCode < 99999 && zipCode > 1) {
+                        String state = (String)items.get("dwc.npdg.homestate").get(0);
+                        String city = (String)items.get("dwc.npdg.homecity").get(0);
+                        if(!isZipPlaceMatched(zip, state, city)) {
+                            errors.get("zipAddressNotMached").add(line.getId());
+                            hasError = true;
+                        }
+                    } else {
                         errors.get("invalidZipFormat").add(line.getId());
+                        hasError = true;
                     }
-                }else{
+                } else {
                     errors.get("invalidZipFormat").add(line.getId());
+                    hasError = true;
                 }
-                if(!(items.get("dwc.npdg.homestate").isEmpty() || items.get("dwc.npdg.homecity").isEmpty() || items.get("dwc.npdg.homezip").isEmpty())){
-                    zip = (String)items.get("dwc.npdg.homezip").get(0);
-                    String state = (String)items.get("dwc.npdg.homestate").get(0);
-                    String city = (String)items.get("dwc.npdg.homecity").get(0);
-                    if(!isZipPlaceMatched(zip, state, city)){
-                        errors.get("zipAddressNotMached").add(line.getId());
-                    }
-                }else{
-                    errors.get("zipAddressNotMached").add(line.getId());
+            }else{
+                errors.get("invalidZipFormat").add(line.getId());
+                hasError = true;
+            }
+
+            if(hasError) {
+                for(String key : items.keySet()) {
+                    addAll(line.getId(), items.get(key));
                 }
-            }catch(NumberFormatException e){
             }
         }
 
         // If csv file contains errors, remove the file
         if(errors.get("invalidHeadings").size()>0 || errors.get("invalidZipFormat").size()>0 || errors.get("zipAddressNotMached").size()>0){
-            file.delete();
+//            file.delete();
+            add("csvErrorFlag", "1");
         }
 
         return errors;
@@ -254,8 +279,6 @@ public class ValidateServiceImpl implements ValidateService {
     @Override
     public Map<String, ArrayList> validateTaxonomy() {
 
-        //To do validate if ip address contains white space
-
         Map<String, ArrayList> errors = new HashMap<>();
         errors.put("invalidInternalCode", new ArrayList<>());
 
@@ -307,6 +330,153 @@ public class ValidateServiceImpl implements ValidateService {
             }
         }
         return errors;
+    }
+
+    @Override
+    public Map<String, ArrayList> validateTaxonomy(String sessionID) {
+
+        Map<String, ArrayList> items;
+        List<CSVLine> collectionData = cSVService.getCollectionTaxonomyData(sessionID);
+        List<CSVLine> linksData = cSVService.getLinksData(sessionID);
+        int counter = 1;
+        for(CSVLine link : linksData)
+        {
+            items = link.getItems();
+            String internalCode = null;
+            if(items != null){
+                // if internal code is null
+                if(items.get("dwc.npdg.internalcode") != null && items.get("dwc.npdg.internalcode").size() > 0){
+                    internalCode = (String)items.get("dwc.npdg.internalcode").get(0);
+                }else{
+                    addTaxAll(counter, getTaxRow(items));
+                    counter++;
+                }
+                // if link is null -- Uncultured fungus
+                String linkUrl = (String)items.get("Link").get(0);
+                if(linkUrl == null) {
+                    linkUrl = "";
+                } else {
+                    linkUrl = linkUrl.trim();
+                }
+                if("".equals(linkUrl)) {
+//                    addTaxAll(counter, getTaxRow(items));
+//                    counter++;
+                } else {
+                    // if link is invalid
+                    if(!CommonUtils.validateUrl((String)items.get("Link").get(0))) {
+                        addTaxAll(counter, getTaxRow(items));
+                        counter++;
+                    }
+                }
+            }
+
+            // if internal code doesn't exist
+            boolean isInternalCodeFound = false;
+            for(CSVLine line : collectionData)
+            {
+                String internalID = null;
+                if(line.getItems() != null)
+                {
+                    if(line.getItems().get("dwc.npdg.internalcode") != null && line.getItems().get("dwc.npdg.internalcode").size() > 0){
+                        internalID = (String)line.getItems().get("dwc.npdg.internalcode").get(0);
+                    }else if(line.getItems().get("dwc.npdg.internalcode[]") != null && line.getItems().get("dwc.npdg.internalcode[]").size() > 0){
+                        internalID = (String)line.getItems().get("dwc.npdg.internalcode[]").get(0);
+                    }
+                }
+                if(internalCode != null && internalID != null)
+                {
+                    if(StringUtils.equals(internalCode, internalID)){
+                        isInternalCodeFound = true;
+                        break;
+                    }
+                }
+            }
+            if(!isInternalCodeFound && internalCode != null){
+                addTaxAll(counter, getTaxRow(items));
+                counter++;
+            }
+        }
+        return rowsWithTaxErrors;
+    }
+
+    @Override
+    public Map<String, ArrayList> getRowsWithErrors(File file) {
+        rowsWithErrors = new HashMap<>();
+        validateCSV(file);
+        return rowsWithErrors;
+    }
+
+    @Override
+    public Map<String, ArrayList> getRowsWithTaxErrors(String sessionID) {
+        rowsWithTaxErrors = new HashMap<>();
+        validateTaxonomy(sessionID);
+        return rowsWithTaxErrors;
+    }
+
+    private void add(String key, String value){
+        if(rowsWithErrors.get(key) == null){
+            rowsWithErrors.put(key, new ArrayList<>());
+        }
+        if(rowsWithErrors.get(key) != null){
+            rowsWithErrors.get(key).add(value);
+        }
+    }
+
+    private void addAll(String key, List<String> value)
+    {
+        if (rowsWithErrors.get(key) == null) {
+            rowsWithErrors.put(key, new ArrayList<>());
+        }
+        if (value != null) {
+            rowsWithErrors.get(key).addAll(value);
+        }
+    }
+
+    private void addTax(int counter, String value){
+        String key = Integer.toString(counter);
+        if(rowsWithTaxErrors.get(key) == null){
+            rowsWithTaxErrors.put(key, new ArrayList<>());
+        }
+        if(rowsWithTaxErrors.get(key) != null){
+            rowsWithTaxErrors.get(key).add(value);
+        }
+    }
+
+    private void addTaxAll(int counter, List<String> value)
+    {
+        String key = Integer.toString(counter);
+        if (rowsWithTaxErrors.get(key) == null) {
+            rowsWithTaxErrors.put(key, new ArrayList<>());
+        }
+        if (value != null) {
+            rowsWithTaxErrors.get(key).addAll(value);
+        }
+    }
+
+    private List<String> getTaxRow(Map<String, ArrayList> items) {
+        List<String> ls = new ArrayList<>();
+
+        for (List l : items.values()) {
+            if (l.size() > 0) {
+                ls.add((String) l.get(0));
+            } else {
+                ls.add("");
+            }
+        }
+        Collections.reverse(ls);
+        return ls;
+    }
+
+    private boolean isNumeric(String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        try {
+            long d = Long.parseLong(strNum);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
     }
 
 }
