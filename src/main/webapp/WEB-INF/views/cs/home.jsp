@@ -161,8 +161,14 @@
         <script>
         // Add the following code if you want the name of the file appear on select
         $(".custom-file-input").on("change", function() {
-          var fileName = $(this).val().split("\\").pop();
-          $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+            var fileName = $(this).val().split("\\").pop();
+            var fileSize = this.files[0].size;
+            if(fileSize > 2000000000) {
+                alert('The maximum file size limit for upload is 2GB');
+                $(this).val('');
+            } else {
+                 $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+            }
         });
         </script>
 
