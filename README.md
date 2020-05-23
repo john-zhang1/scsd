@@ -1,6 +1,6 @@
-# ShareOK Citizen Science Data Converter
+# SAF Builder
 
-Tool to process Citizen Science Data
+Helper tool to validate metadata and generate Simple Archive Packages for data ingestion in DSpace collections.
 
 
 ## Workflow Notes
@@ -8,4 +8,3 @@ Tool to process Citizen Science Data
 * Read csv files
 * Verify data format
 * Generate SAFs
-* JSON data for maps
