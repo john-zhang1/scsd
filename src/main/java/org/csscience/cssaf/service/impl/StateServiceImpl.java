@@ -81,7 +81,7 @@ public class StateServiceImpl implements StateService {
 
     @Override
     public String combinedName(String shortName) {
-        State state = findByShortName(shortName);
+        State state = findByShortName(shortName.trim().toUpperCase());
         String combinedState = state.getLongName() + " - " + state.getShortName();
         return combinedState;
     }
